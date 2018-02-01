@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+	<style>
+		*{
+			margin: 0;
+			padding: 0;
+		}
+		.box{
+			position: relative;
+			width:400px;
+			height:200px;
+			margin: 20px auto;
+			overflow: hidden;
+			border: 1px solid #000
+		}
+		.list{
+			height:200px;
+			position: absolute;
+			top:0;
+			left: 0;
+			width:10px;
+			float: left;
+			
+		}
+		.list li{
+			width:400px;
+			height:200px;
+			float: left;
+			list-style: none;	
+		}
+		.list li:nth-child(1){
+			background-color: antiquewhite;
+		}
+		.list li:nth-child(2){
+			background-color: burlywood;
+		}
+		.list li:nth-child(3){
+			background-color: coral;
+		}
+		.list li:nth-child(4){
+			background-color: darkcyan;
+		}
+		.list li:nth-child(5){
+			background-color: firebrick;
+		}
+		.little{
+			position: absolute;
+			height: 20px;
+			width: 185px;			
+			right: 5px;
+			bottom:5px;
+		}
+		.little li{
+			width:30px;
+			height: 20px;
+			float: left;
+			background-color:white;
+			list-style: none;	
+			text-align: center;
+			border:1px solid #000;
+			margin-right: 5px;
+		}
+		.little .active{
+			background-color: salmon;
+		}
+		.pre{
+			height: 20px;
+			width:20px;
+			line-height: 20px;
+			background-color: #000;
+			color: white;
+			position: absolute;
+			top:50%;
+			margin-top: -10px;
+			left: 5px;
+			text-align: center;
+			font-size: 20px;
+
+		}
+		.next{
+			height: 20px;
+			line-height: 20px;
+			width:20px;
+			background-color: #000;
+			color: white;
+			position: absolute;
+			top:50%;
+			margin-top: -10px;
+			right: 5px;
+			text-align: center;
+			font-size: 20px;
+
+		}
+	</style>
+	</head>
+	<body>
+		<div class="box">
+			<ul class="list">
+				<li style="background-color: antiquewhite;">1</li>
+				<li>2</li>
+				<li>3</li>
+				<li>4</li>
+				<li>5</li>
+			</ul>
+			<ul class="little">
+				<li class="active">1</li>
+				<li>2</li>
+				<li>3</li>
+				<li>4</li>
+				<li>5</li>
+			</ul>
+			<div class="pre"><</div>
+			<div class="next">></div>
+		</div>
+<script>
+		function getcomputedstl(dom, stl) {
+		if (getComputedStyle) {
+			return getComputedStyle(dom, '')[stl]
+		} else {
+			return dom.currentStyle()[stl]
+		}
+	}
+		function move(dom, stl, target,fn) {
+			clearInterval(dom.timer)
+			dom.timer = setInterval(function () {
+				var current = parseInt(getcomputedstl(dom, stl));
+				var step = (target - current) > 0 ? Math.ceil((target - current) /8) : Math.floor((target - current) / 8);
+				// console.log(target, current);
+				if (current == target) {
+					dom.style[stl] = target + 'px'
+					clearInterval(dom.timer);
+					if(fn){
+						fn();
+					}
+					return false;
+				}
+				dom.style[stl] = (current + step) + 'px';
+			},0)
+		}
+
+//start
+	var ul=document.querySelector('ul');
+	var li=ul.querySelectorAll('li');		
+	ul.appendChild(li[0].cloneNode(true));
+	var lis=ul.querySelectorAll('li');
+	var i=0;
+	var step=parseInt(getcomputedstl(lis[0],'width'));
+	var little=document.querySelector(".little");
+	var littles=little.querySelectorAll("li");
+	ul.style.width=(step*lis.length)+'px';
+	// console.log(step)
+
+//轮播计时器
+	var timer=setInterval(function(){
+		i++;	
+		act();		
+
+	},1500)
+
+	function act(){
+			if(i<0){
+				ul.style.left=(-step*(lis.length-1))+'px';
+				i=lis.length-2
+			}
+
+			if(i==(lis.length)){
+				ul.style.left=0;
+				i=1;	
+			}
+			move(ul,'left',step*-i);
+
+			for(var j=0;j<littles.length;j++){
+				littles[j].className="";
+			}
+			if(i==littles.length){
+				littles[0].className="active";
+			}else{
+				littles[i].className="active";
+			}
+			
+	}
+//点击小点时left值更改到对应li。
+	for(var k=0;k<littles.length;k++){
+		//防止异步导致的无法获取当前k值。保存为'this.index'
+		littles[k].index=k; 
+		littles[k].onmouseenter=function(){
+			i=this.index;
+			act();
+		}
+	}
+
+//上一页、下一页
+	var pre=document.querySelector('.pre');
+	var next=document.querySelector('.next');
+	console.log(pre,next)
+	pre.onclick=function(){
+		i--
+		act()
+	}
+	next.onclick=function(){
+		i++
+		act()
+	}
+
+// 鼠标进入时停止轮播，离开时开启轮播。
+	var box=document.querySelector('.box');
+	box.onmouseenter=function(){
+		clearInterval(timer);
+	}
+	box.onmouseleave=function(){
+		timer=setInterval(function(){
+			i++;	
+			act();		
+		},3000)
+	}
+</script>
+	</body>
+</html>
